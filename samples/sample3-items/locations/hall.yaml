@@ -1,0 +1,8 @@
+description: You are standing in the hall of a house.
+actions:
+  -
+    verb: open
+    noun: door
+    message:
+      - You open the door and leave the house.
+    finish: true

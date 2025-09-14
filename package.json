@@ -1,0 +1,25 @@
+{
+  "name": "adventure-generator",
+  "version": "1.0.0",
+  "description": "Browser-based Text Adventure from YAML",
+  "main": "game/interactive.js",
+  "scripts": {
+    "prettier": "prettier --write game/**"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/van-appears/adventure-iteration.git"
+  },
+  "homepage": "https://github.com/van-appears/adventure-iteration#readme",
+  "keywords": [
+    "text",
+    "adventure"
+  ],
+  "author": "van-appears",
+  "license": "MIT",
+  "dependencies": {
+    "clone-deep": "^4.0.1",
+    "prettier": "^3.6.2",
+    "yaml": "^2.8.1"
+  }
+}
