@@ -3,3 +3,4 @@ actions:
   - verb: break
     message: You break the bottle and release the key.
     add: key
+    remove: bottle

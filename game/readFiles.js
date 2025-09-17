@@ -68,10 +68,12 @@ function normalizeActions(definition) {
       Object.values(action.when).forEach(value => {
         value.set = [].concat(value.set || []);
         value.add = [].concat(value.add || []);
+        value.remove = [].concat(value.remove || []);
       });
     } else {
       action.set = [].concat(action.set || []);
       action.add = [].concat(action.add || []);
+      action.remove = [].concat(action.remove || []);
     }
   });
 }

@@ -39,11 +39,10 @@ async function start() {
 
 async function game(gameData) {
   const { map, assets, inventory, state } = gameData;
-  let lastLocation = null;
 
   while (!gameData.gameover) {
     const currentLocation = gameData.currentLocation;
-    if (gameData.currentLocationKey !== lastLocation) {
+    if (gameData.currentLocationKey !== gameData.lastLocationKey) {
       if (currentLocation.visited) {
         console.log("You are in:", currentLocation.key);
       } else {
@@ -58,94 +57,120 @@ async function game(gameData) {
     const command = parser(answer);
     console.log(command);
 
-    lastLocation = currentLocation.key;
     if (command.type === "CONTROL") {
-      if (command.action === "quit") {
-        gameData.gameover = true;
-      } else if (command.action === "look") {
-        console.log(describeLocation(gameData));
-        console.log(describeItems(gameData));
-        console.log(describeExits(gameData));
-      } else if (command.action === "inventory") {
-        console.log(listInventory(gameData));
-      }
+      doControlAction(gameData, command.action);
     } else if (command.type === "MOVE") {
-      const nextLocation = map[gameData.currentLocationKey][command.direction];
-      if (nextLocation) {
-        gameData.currentLocationKey = nextLocation;
-      } else {
-        console.log("There is no exit in that direction.");
-        lastLocation = currentLocation.key;
-      }
+      doMove(gameData, command.direction);
+    } else if (command.type === "DESCRIBE") {
+      doDescribeItem(gameData, command.noun);
+      gameData.lastLocationKey = gameData.currentLocationKey;
     } else if (command.type === "TAKE") {
-      if (currentLocation.items.includes(command.noun)) {
-        inventory[command.noun] = true;
-        currentLocation.items = currentLocation.items.filter(
-          item => item !== command.noun
-        );
-        console.log("You have taken: ", command.noun);
-      } else if (inventory[command.noun]) {
-        console.log("You already have: ", command.noun);
-      } else {
-        console.log("There isn't one of those here.");
-      }
+      doTakeItem(gameData, command.noun);
+      gameData.lastLocationKey = gameData.currentLocationKey;
     } else if (command.type === "ACTION") {
-      const locationAction = currentLocation.actions.find(
-        a => a.verb === command.verb && a.noun === command.noun
-      );
-      let done = false;
-      if (locationAction) {
-        console.log(processActions(gameData, locationAction));
-        done = true;
-      }
-
-      const locationItem = currentLocation.items.find(i => i === command.noun);
-      if (!done && locationItem && gameData.assets[command.noun]) {
-        const itemAction = gameData.assets[command.noun].actions.find(
-          a => a.verb === command.verb
-        );
-        if (itemAction) {
-          console.log(processActions(gameData, itemAction));
-          done = true;
-        }
-      }
-
-      const inventoryItem = inventory[command.noun];
-      if (!done && inventoryItem && gameData.assets[command.noun]) {
-        console.log(
-          "gameData.assets[command.noun].actions",
-          gameData.assets[command.noun].actions
-        );
-        const itemAction = gameData.assets[command.noun].actions.find(
-          a => a.verb === command.verb
-        );
-        if (itemAction) {
-          console.log(processActions(gameData, itemAction));
-          done = true;
-        }
-      }
-
-      if (!done) {
-        console.log("I don't understand that.");
-      }
+      doPerformAction(gameData, command);
+      gameData.lastLocationKey = gameData.currentLocationKey;
     } else if (command.type === "UNKNOWN") {
       console.log("I don't understand that.");
+      gameData.lastLocationKey = gameData.currentLocationKey;
     }
   }
 }
 
+function doControlAction(gameData, action) {
+  if (action === "quit") {
+    gameData.gameover = true;
+  } else if (action === "look") {
+    console.log(describeLocation(gameData));
+    console.log(describeItems(gameData));
+    console.log(describeExits(gameData));
+  } else if (action === "inventory") {
+    console.log(listInventory(gameData));
+  }
+}
+
+function doMove(gameData, direction) {
+  const { currentLocationKey, map } = gameData;
+  const nextLocation = map[currentLocationKey][direction];
+  if (nextLocation) {
+    gameData.currentLocationKey = nextLocation;
+  } else {
+    console.log("There is no exit in that direction.");
+    gameData.lastLocationKey = currentLocationKey;
+  }
+}
+
+function doDescribeItem(gameData, noun) {
+  const { currentLocation, inventory, assets } = gameData;
+  if (currentLocation.items.includes(noun) || inventory[noun]) {
+    const { description } = assets[noun];
+    if (Array.isArray(description)) {
+      console.log(description);
+    } else if (typeof description === "object" && description.when) {
+      console.log(getPassingObjects(gameData, description.when));
+    }
+  } else {
+    console.log("There isn't one of those here.");
+  }
+}
+
+function doTakeItem(gameData, noun) {
+  const { currentLocation, inventory } = gameData;
+  if (currentLocation.items.includes(noun)) {
+    inventory[noun] = true;
+    currentLocation.items = currentLocation.items.filter(item => item !== noun);
+    console.log("You have taken:", noun);
+  } else if (inventory[noun]) {
+    console.log("You already have:", noun);
+  } else {
+    console.log("There isn't one of those here.");
+  }
+}
+
+function doPerformAction(gameData, command) {
+  const { currentLocation, inventory, assets } = gameData;
+  const locationAction = currentLocation.actions.find(
+    a => a.verb === command.verb && a.noun === command.noun
+  );
+  if (locationAction) {
+    console.log(processActions(gameData, locationAction));
+    return;
+  }
+
+  const item =
+    currentLocation.items.find(i => i === command.noun) ||
+    inventory[command.noun];
+  if (item && assets[command.noun]) {
+    const itemAction = assets[command.noun].actions.find(
+      a => a.verb === command.verb
+    );
+    if (itemAction) {
+      console.log(processActions(gameData, itemAction));
+      return;
+    }
+  }
+
+  console.log("I don't understand that.");
+}
+
 function processActions(gameData, action) {
+  const { currentLocation, inventory } = gameData;
   const actions = action.when
     ? getPassingObjects(gameData, action.when)
     : [].concat(action);
   return actions
     .map(actionItem => {
-      console.log("MATCH", actionItem);
       actionItem.set.forEach(flag => {
         state[flag] = true;
       });
       actionItem.add.forEach(key => {
-        gameData.currentLocation.items.push(key);
+        currentLocation.items.push(key);
+      });
+      actionItem.remove.forEach(key => {
+        currentLocation.items = currentLocation.items.filter(
+          item => item !== key
+        );
+        delete inventory[key];
       });
       if (actionItem.finish) {
         gameData.gameover = true;
@@ -153,18 +178,6 @@ function processActions(gameData, action) {
       return actionItem.message;
     })
     .filter(x => x);
-}
-
-function describeLocation(gameData) {
-  const { assets, currentLocationKey, inventory, state } = gameData;
-  const { description } = assets[currentLocationKey];
-  if (Array.isArray(description)) {
-    return description;
-  }
-  if (typeof description === "object" && description.when) {
-    return getPassingObjects(gameData, description.when);
-  }
-  return "You are in: " + currentLocationKey;
 }
 
 function getPassingObjects(gameData, when) {
@@ -196,6 +209,18 @@ function getPassingObjects(gameData, when) {
       }
     })
     .filter(x => x);
+}
+
+function describeLocation(gameData) {
+  const { assets, currentLocationKey, inventory, state } = gameData;
+  const { description } = assets[currentLocationKey];
+  if (Array.isArray(description)) {
+    return description;
+  }
+  if (typeof description === "object" && description.when) {
+    return getPassingObjects(gameData, description.when);
+  }
+  return "You are in: " + currentLocationKey;
 }
 
 function describeExits(gameData) {

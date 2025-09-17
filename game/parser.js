@@ -12,6 +12,9 @@ function parser(action) {
   if (action.startsWith("take ")) {
     return { type: "TAKE", noun: action.substring(5).trim() };
   }
+  if (action.startsWith("describe ")) {
+    return { type: "DESCRIBE", noun: action.substring(9).trim() };
+  }
   if (["look", "quit", "inventory"].includes(action)) {
     return { type: "CONTROL", action };
   }
