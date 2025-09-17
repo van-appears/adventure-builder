@@ -25,69 +25,36 @@ async function readFiles(parentFolder) {
 
   // TODO: EXTRACT
 
-  if (structure.includes("locations")) {
-    const allLocationFiles = await readdir(
-      path.join(parentFolder, "locations")
-    );
-    const locations = await Promise.all(
-      allLocationFiles
+  if (structure.includes("assets")) {
+    const allAssetFiles = await readdir(path.join(parentFolder, "assets"));
+    const assets = await Promise.all(
+      allAssetFiles
         .filter(file => file.endsWith(".yaml"))
         .map(async file => {
           try {
-            const definition = await readYaml(["locations", file]);
+            const definition = await readYaml(["assets", file]);
             if (typeof definition.description === "string") {
-              definition.description = definition.description.split("\\n");
+              definition.description = [].concat(definition.description);
             }
             definition.key = removeSuffix(file);
-            definition.items = (definition.items || []);
+            definition.items = definition.items || [];
             normalizeActions(definition);
             return definition;
           } catch (err) {
             console.log(err);
-            result.errors.push(`locations '${file}' not parseable: ${err}`);
+            result.errors.push(`File '${file}' not parseable: ${err}`);
           }
         })
     );
 
-    result.locations = locations
-      .filter(location => location)
-      .reduce((acc, location) => {
-        acc[location.key] = location;
+    result.assets = assets
+      .filter(asset => asset)
+      .reduce((acc, asset) => {
+        acc[asset.key] = asset;
         return acc;
       }, {});
   } else {
-    result.errors.push("'locations' not found");
-  }
-
-  if (structure.includes("things")) {
-    const allThingFiles = await readdir(
-      path.join(parentFolder, "things")
-    );
-    const things = await Promise.all(
-      allThingFiles
-        .filter(file => file.endsWith(".yaml"))
-        .map(async file => {
-          try {
-            const definition = await readYaml(["things", file]);
-            if (typeof definition.description === "string") {
-              definition.description = definition.description.split("\\n");
-            }
-            definition.key = removeSuffix(file);
-            normalizeActions(definition);
-            return definition;
-          } catch (err) {
-            console.log(err);
-            result.errors.push(`things '${file}' not parseable: ${err}`);
-          }
-        })
-    );
-
-    result.things = things
-      .filter(thing => thing)
-      .reduce((acc, thing) => {
-        acc[thing.key] = thing;
-        return acc;
-      }, {});
+    result.errors.push("'assets' not found");
   }
 
   console.log(result);
@@ -95,9 +62,17 @@ async function readFiles(parentFolder) {
 }
 
 function normalizeActions(definition) {
-  definition.actions = (definition.actions || []);
+  definition.actions = definition.actions || [];
   definition.actions.forEach(action => {
-    action.set = [].concat(action.set || []);
+    if (action.when) {
+      Object.values(action.when).forEach(value => {
+        value.set = [].concat(value.set || []);
+        value.add = [].concat(value.add || []);
+      });
+    } else {
+      action.set = [].concat(action.set || []);
+      action.add = [].concat(action.add || []);
+    }
   });
 }
 

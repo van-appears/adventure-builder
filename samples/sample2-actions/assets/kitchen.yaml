@@ -2,9 +2,7 @@ description:
   - You are in a smallish kitchen, it looks quite bare.
   - There is a light switch on the wall.
 actions:
-  -
-    verb: turn on
+  - verb: turn on
     noun: switch
-    message:
-      - Nothing happens in the kitchen, but you notice a light coming on in the hall.
+    message: Nothing happens in the kitchen, but you notice a light coming on in the hall.
     set: hall_light_on

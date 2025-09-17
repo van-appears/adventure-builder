@@ -1,0 +1,12 @@
+description:
+  - You are standing in the hall of a house.
+  - There is a door here to the outside world.
+actions:
+  - verb: open
+    noun: door
+    when:
+      has key:
+        message: You open the door and leave the house.
+        finish: true
+      not has key:
+        message: The door is locked.

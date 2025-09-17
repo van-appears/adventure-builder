@@ -1,5 +1,7 @@
 const COMMANDS = {
-  "turn on": [ "press", "enable", "switch on" ]
+  "turn on": ["press", "enable", "switch on"],
+  open: ["unlock"],
+  break: ["smash"]
 };
 
 function parser(action) {

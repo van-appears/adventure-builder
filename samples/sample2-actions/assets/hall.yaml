@@ -1,0 +1,13 @@
+description:
+  when:
+    :
+      - You are standing in the hall of a house.
+    not hall_light_on:
+      - It is very dark, you can't see anything.
+    hall_light_on:
+      - You can see a door!
+actions:
+  - verb: open
+    noun: door
+    message: You open the door and leave the house.
+    finish: true
