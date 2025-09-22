@@ -1,0 +1,9 @@
+.started .loading,
+.finished .loading,
+.finished .input {
+  display: none;
+}
+
+.started .wrapper {
+  display: block !important;
+}

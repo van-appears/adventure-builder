@@ -1,8 +1,9 @@
-const readline = require("node:readline/promises");
-const { stdin: input, stdout: output } = require("node:process");
-const readFiles = require("./readFiles");
-const Game = require("./game");
-const rl = readline.createInterface({ input, output });
+import readline from "node:readline/promises";
+import { stdin, stdout } from "node:process";
+import readFiles from "./readFiles.js";
+import Game from "./game.js";
+
+const rl = readline.createInterface({ input: stdin, output: stdout });
 
 async function start() {
   const configuration = await readFiles(process.argv[2]);

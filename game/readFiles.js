@@ -1,6 +1,6 @@
-const { readdir, readFile } = require("node:fs/promises");
-const { parse } = require("yaml");
-const path = require("path");
+import { readdir, readFile } from "node:fs/promises";
+import { parse } from "yaml";
+import path from "path";
 
 // TODO: NOT COVERED, READING .YML FILES
 
@@ -82,4 +82,4 @@ function removeSuffix(file) {
   return file.replace(/.y[a]?ml$/, "");
 }
 
-module.exports = readFiles;
+export default readFiles;

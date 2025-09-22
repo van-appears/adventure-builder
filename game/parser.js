@@ -39,4 +39,4 @@ function parser(action) {
   return { type: "UNKNOWN" };
 }
 
-module.exports = parser;
+export default parser;

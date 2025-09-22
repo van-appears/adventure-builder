@@ -1,5 +1,5 @@
-const cloneDeep = require("clone-deep");
-const parser = require("./parser");
+import cloneDeep from "clone-deep";
+import parser from "./parser.js";
 
 class Game {
   constructor(config) {
@@ -232,4 +232,4 @@ class Game {
   }
 }
 
-module.exports = Game;
+export default Game;

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Browser-based Text Adventure from YAML",
   "main": "game/interactive.js",
+  "type": "module",
   "scripts": {
     "prettier": "prettier --write game/**",
     "dev": "vite",
