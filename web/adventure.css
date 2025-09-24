@@ -1,0 +1,70 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Arial", "Helvetica", sans-serif;
+  height: 100%;
+  width: 100%;
+  background: green;
+  overflow-y: hidden;
+}
+
+body {
+  text-align: center;
+}
+
+.started .loading,
+.finished .loading,
+.finished .input {
+  display: none;
+}
+
+.wrapper {
+  display: inline-block;
+  width: 600px;
+  height: 100%;
+  background: black;
+}
+
+.textInput span,
+.textOutput span {
+  border-radius: 10px;
+  padding: 5px;
+  margin: 2px 2px 0 2px;
+  width: fit-content;
+}
+
+.textOutput {
+  display: flex;
+  flex-direction: row;
+}
+
+.textOutput span {
+  text-align: left;
+  background: #272e29;
+  color: #dddddd;
+}
+
+.textInput {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.textInput span {
+  text-align: right;
+  background: #417235;
+  color: #dddddd;
+}
+
+.history {
+  height: calc(100% - 30px);
+  overflow-y: scroll;
+}
+
+.input {
+  height: 30px;
+}
+
+.input input {
+  width: calc(100% - 20px);
+}

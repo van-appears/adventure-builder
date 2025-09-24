@@ -35,7 +35,7 @@ class Game {
     if (parsed.type === "ACTION") {
       return this.doPerformAction(parsed);
     }
-    return [ "I don't understand that." ];
+    return ["I don't understand that."];
   }
 
   currentLocation() {
@@ -52,7 +52,7 @@ class Game {
   doControlAction(action) {
     if (action === "quit") {
       this.gameover = true;
-      return [ "Goodbye!" ];
+      return ["Goodbye!"];
     }
     if (action === "look") {
       return this.describeCurrentLocation();
@@ -68,7 +68,7 @@ class Game {
       this.currentLocationKey = nextLocationKey;
       const currentLocation = this.currentLocation();
       if (currentLocation.visited) {
-        return [ "You are in: " + currentLocation.key ];
+        return ["You are in: " + currentLocation.key];
       }
 
       currentLocation.visited = true;
@@ -76,7 +76,7 @@ class Game {
     }
 
     this.lastLocationKey = this.currentLocationKey;
-    return [ "There is no exit in that direction." ];
+    return ["There is no exit in that direction."];
   }
 
   doDescribeItem(noun) {
@@ -88,20 +88,22 @@ class Game {
       }
       return description;
     }
-    return [ "There isn't one of those here." ];
+    return ["There isn't one of those here."];
   }
 
   doTakeItem(noun) {
     const currentLocation = this.currentLocation();
     if (currentLocation.items.includes(noun)) {
       this.inventory[noun] = true;
-      currentLocation.items = currentLocation.items.filter(item => item !== noun);
-      return [ "You have taken: " + noun ];
+      currentLocation.items = currentLocation.items.filter(
+        item => item !== noun
+      );
+      return ["You have taken: " + noun];
     }
     if (inventory[noun]) {
-      return [ "You already have: " + noun ];
+      return ["You already have: " + noun];
     }
-    return [ "There isn't one of those here." ];
+    return ["There isn't one of those here."];
   }
 
   doPerformAction(command) {
@@ -125,10 +127,10 @@ class Game {
       }
     }
 
-    return [ "I don't understand that." ];
+    return ["I don't understand that."];
   }
 
-  processActions( action) {
+  processActions(action) {
     const currentLocation = this.currentLocation();
     const actions = action.when
       ? this.getPassingObjects(action.when)
@@ -193,7 +195,7 @@ class Game {
     if (typeof description === "object" && description.when) {
       return getPassingObjects(description.when);
     }
-    return [ "You are in: " + this.currentLocationKey ];
+    return ["You are in: " + this.currentLocationKey];
   }
 
   describeExits() {
@@ -221,14 +223,14 @@ class Game {
     if (!items.length) {
       return [];
     }
-    return [ "Here there is: " + items.join(", ") ];
+    return ["Here there is: " + items.join(", ")];
   }
 
   listInventory() {
     if (!Object.keys(this.inventory).length) {
-      return [ "You are not carrying anything" ];
+      return ["You are not carrying anything"];
     }
-    return [ "You are carrying: " + Object.keys(this.inventory).join(", ") ];
+    return ["You are carrying: " + Object.keys(this.inventory).join(", ")];
   }
 }
 

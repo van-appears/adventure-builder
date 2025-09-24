@@ -1,2 +1,2 @@
-import "./base.js";
-import "./base.css";
+import "./adventure.js";
+import "./adventure.css";

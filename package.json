@@ -5,7 +5,7 @@
   "main": "game/interactive.js",
   "type": "module",
   "scripts": {
-    "prettier": "prettier --write game/**",
+    "prettier": "prettier --write game/** web/** vite.config.js",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
