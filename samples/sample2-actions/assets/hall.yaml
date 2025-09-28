@@ -1,7 +1,7 @@
 description:
   when:
     :
-      - You are standing in the hall of a house.
+      - You are standing in the hall of a house. There is a bear here.
     not hall_light_on:
       - It is very dark, you can't see anything.
     hall_light_on:
@@ -11,3 +11,10 @@ actions:
     noun: door
     message: You open the door and leave the house.
     finish: true
+  - when:
+      honey_eaten:
+        message:
+          - The bear smells the honey on you.
+          - You smell tasty.
+          - The bear eats you.
+        finsih: true

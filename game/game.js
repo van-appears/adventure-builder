@@ -5,6 +5,7 @@ class Game {
   constructor(config) {
     const cloneConfig = cloneDeep(config);
     this.map = cloneConfig.map;
+    this.synonyms = cloneConfig.synonyms;
     this.assets = cloneConfig.assets;
     this.inventory = {};
     this.state = {};
@@ -19,7 +20,7 @@ class Game {
   }
 
   next(command) {
-    const parsed = parser(command);
+    const parsed = parser(command, this.synonyms);
     if (parsed.type === "MOVE") {
       return this.doMove(parsed.direction);
     }
@@ -64,18 +65,25 @@ class Game {
 
   doMove(direction) {
     const nextLocationKey = this.map[this.currentLocationKey][direction];
+    let description;
+
     if (nextLocationKey) {
       this.currentLocationKey = nextLocationKey;
       const currentLocation = this.currentLocation();
       if (currentLocation.visited) {
-        return ["You are in: " + currentLocation.key];
+        description = ["You are in: " + currentLocation.key];
+      } else {
+        currentLocation.visited = true;
+        description = this.describeCurrentLocation();
       }
 
-      currentLocation.visited = true;
-      return this.describeCurrentLocation();
+      const visitAction = currentLocation.actions.find(action => !action.verb);
+      if (visitAction) {
+        description = description.concat(this.processActions(visitAction));
+      }
+      return description;
     }
 
-    this.lastLocationKey = this.currentLocationKey;
     return ["There is no exit in that direction."];
   }
 
@@ -84,7 +92,7 @@ class Game {
     if (currentLocation.items.includes(noun) || this.inventory[noun]) {
       const { description } = this.assets[noun];
       if (typeof description === "object" && description.when) {
-        return getPassingObjects(description.when);
+        return this.getPassingObjects(description.when);
       }
       return description;
     }
@@ -94,6 +102,13 @@ class Game {
   doTakeItem(noun) {
     const currentLocation = this.currentLocation();
     if (currentLocation.items.includes(noun)) {
+      const asset = this.assets[noun];
+      if (asset.immovable) {
+        if (typeof asset.immovable === "string") {
+          return [asset.immovable];
+        }
+        return ["You can't take that item."];
+      }
       this.inventory[noun] = true;
       currentLocation.items = currentLocation.items.filter(
         item => item !== noun
@@ -138,7 +153,7 @@ class Game {
     return actions
       .map(actionItem => {
         actionItem.set.forEach(flag => {
-          state[flag] = true;
+          this.state[flag] = true;
         });
         actionItem.add.forEach(key => {
           currentLocation.items.push(key);
@@ -179,12 +194,13 @@ class Game {
             return when[check];
           }
         } else if (!!this.state[check]) {
-          return dewhen[check];
-        } else if (stateCheck === this.currentLocationKey) {
+          return when[check];
+        } else if (check === this.currentLocationKey) {
           return when[check];
         }
       })
-      .filter(x => x);
+      .filter(x => x)
+      .flat();
   }
 
   describeLocation() {
@@ -193,7 +209,7 @@ class Game {
       return description;
     }
     if (typeof description === "object" && description.when) {
-      return getPassingObjects(description.when);
+      return this.getPassingObjects(description.when);
     }
     return ["You are in: " + this.currentLocationKey];
   }

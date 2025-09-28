@@ -1,10 +1,4 @@
-const COMMANDS = {
-  "turn on": ["press", "enable", "switch on"],
-  open: ["unlock"],
-  break: ["smash"]
-};
-
-function parser(action) {
+function parser(action, synonyms) {
   action = action.trim().toLowerCase();
   if (action.startsWith("go ")) {
     return { type: "MOVE", direction: action.substring(3).trim() };
@@ -18,7 +12,7 @@ function parser(action) {
   if (["look", "quit", "inventory"].includes(action)) {
     return { type: "CONTROL", action };
   }
-  for (let [key, alternatives] of Object.entries(COMMANDS)) {
+  for (let [key, alternatives] of Object.entries(synonyms)) {
     if (action.startsWith(key + " ")) {
       return {
         type: "ACTION",

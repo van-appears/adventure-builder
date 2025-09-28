@@ -1,0 +1,15 @@
+title: Sample3
+map:
+  start: hall
+  hall:
+    north: kitchen
+  kitchen:
+    south: hall
+synonyms:
+  turn on:
+    - press
+    - enable
+    - switch on
+  open: unlock
+  break: smash
+  eat: consume

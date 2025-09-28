@@ -1,0 +1,5 @@
+description: It's a fridge. It seems to be working ok.
+immovable: You can't take the fridge, it's too big!
+actions:
+  - verb: open
+    message: You open the fridge. There's nothing inside, not even a nubbin of cheese.

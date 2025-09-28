@@ -1,5 +1,0 @@
-start: hall
-hall:
-  north: kitchen
-kitchen:
-  south: hall

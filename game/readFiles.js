@@ -13,14 +13,17 @@ async function readFiles(parentFolder) {
     return parse(file);
   };
 
-  if (structure.includes("map.yaml")) {
+  if (structure.includes("game.yaml")) {
     try {
-      result.map = await readYaml(["map.yaml"]);
+      const game = await readYaml(["game.yaml"]);
+      result.map = game.map;
+      result.synonyms = game.synonyms || {};
+      result.title = game.title || "Adventure";
     } catch (err) {
-      result.errors.push(`'map.yaml' not parseable: ${err}`);
+      result.errors.push(`'game.yaml' not parseable: ${err}`);
     }
   } else {
-    result.errors.push("'map.yaml' not found");
+    result.errors.push("'game.yaml' not found");
   }
 
   // TODO: EXTRACT
@@ -39,6 +42,12 @@ async function readFiles(parentFolder) {
             definition.key = removeSuffix(file);
             definition.items = definition.items || [];
             normalizeActions(definition);
+            definition.actions.forEach(action => {
+              if (action.verb && !result.synonyms[action.verb]) {
+                result.synonyms[action.verb] = [];
+              }
+            });
+
             return definition;
           } catch (err) {
             console.log(err);

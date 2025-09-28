@@ -9,7 +9,7 @@ function addLine(line, user) {
   const spanEl = document.createElement("span");
   spanEl.innerText = line;
   lineEl.append(spanEl);
-  $(".history").append(lineEl);
+  $(".history").insertBefore(lineEl, $(".spacer"));
 }
 
 if (import.meta.env.DEV) {

@@ -1,0 +1,5 @@
+description: It's a tasty looking jar of honey.
+actions:
+  - verb: eat
+    message: You eat some of the honey. You are a messy eater and it gets all over your t-shirt.
+    set: honey_eaten
