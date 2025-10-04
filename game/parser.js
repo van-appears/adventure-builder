@@ -1,7 +1,21 @@
+export const DIRECTIONS = {
+  n: "north",
+  e: "east",
+  w: "west",
+  s: "south",
+  ne: "northeast",
+  nw: "northwest",
+  se: "southeast",
+  sw: "southwest"
+};
+
 function parser(action, synonyms) {
   action = action.trim().toLowerCase();
-  if (action.startsWith("go ")) {
-    return { type: "MOVE", direction: action.substring(3).trim() };
+  const direction = Object.entries(DIRECTIONS).find(
+    d => d[0] === action || d[1] === action
+  );
+  if (direction) {
+    return { type: "MOVE", direction };
   }
   if (action.startsWith("take ")) {
     return { type: "TAKE", noun: action.substring(5).trim() };

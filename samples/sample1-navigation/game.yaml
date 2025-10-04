@@ -1,15 +1,20 @@
 title: Sample1
+introduction: You have woken up in a strange location. You don't know how you got here.
 map:
-  start: hall
-  hall:
-    north: kitchen
-  kitchen:
-    south: hall
-synonyms:
-  turn on:
-    - press
-    - enable
-    - switch on
-  open: unlock
-  break: smash
-  eat: consume
+  start: room1
+  room1:
+    north: room2
+    east: room3
+    south: room2
+    west: room1
+  room2:
+    north: room1
+    east: room1
+    south: room2
+    west: room3
+  room3:
+    north: room1
+    east: room4
+    south: room2
+    west: room3
+  room4:

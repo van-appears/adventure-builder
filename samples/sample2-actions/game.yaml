@@ -1,4 +1,5 @@
 title: Sample2
+introduction: You have woken up in a strange location. You don't know how you got here.
 map:
   start: hall
   hall:

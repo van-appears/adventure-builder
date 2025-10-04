@@ -4,6 +4,7 @@ import parser from "./parser.js";
 class Game {
   constructor(config) {
     const cloneConfig = cloneDeep(config);
+    this.introduction = cloneConfig.introduction;
     this.map = cloneConfig.map;
     this.synonyms = cloneConfig.synonyms;
     this.assets = cloneConfig.assets;
@@ -14,7 +15,9 @@ class Game {
 
   start() {
     this.currentLocationKey = this.map.start;
-    const description = this.describeCurrentLocation();
+    const description = []
+      .concat(this.introduction)
+      .concat(this.describeCurrentLocation());
     this.currentLocation().visited = true;
     return description;
   }
@@ -64,7 +67,9 @@ class Game {
   }
 
   doMove(direction) {
-    const nextLocationKey = this.map[this.currentLocationKey][direction];
+    const nextLocationKey =
+      this.map[this.currentLocationKey][direction[0]] ||
+      this.map[this.currentLocationKey][direction[1]];
     let description;
 
     if (nextLocationKey) {
@@ -173,32 +178,41 @@ class Game {
   }
 
   getPassingObjects(when) {
-    return Object.keys(when)
+    const matches = Object.keys(when)
+      .filter(x => x)
       .map(check => {
-        if (check === "") {
-          return when[check];
+        const checkParts = check.split(" and ");
+        if (
+          checkParts.every(part => {
+            if (part.startsWith("not ")) {
+              const key = part.substring(4);
+              return !(
+                this.inventory[key] ||
+                this.state[key] ||
+                key === currentLocation
+              );
+            }
+            return (
+              this.inventory[part] ||
+              this.state[part] ||
+              part === currentLocation
+            );
+          })
+        ) {
+          return check;
         }
-        if (check.startsWith("not has ")) {
-          const key = check.substring(8);
-          if (!this.inventory[key]) {
-            return when[check];
-          }
-        } else if (check.startsWith("has ")) {
-          const key = check.substring(4);
-          if (this.inventory[key]) {
-            return when[check];
-          }
-        } else if (check.startsWith("not ")) {
-          const key = check.substring(4);
-          if (!this.state[key]) {
-            return when[check];
-          }
-        } else if (!!this.state[check]) {
-          return when[check];
-        } else if (check === this.currentLocationKey) {
-          return when[check];
-        }
-      })
+      });
+
+    if (matches.length == 0 && when.else) {
+      matches.push("else");
+    }
+
+    if (when[""]) {
+      matches.unshift("");
+    }
+
+    return matches
+      .map(check => when[check])
       .filter(x => x)
       .flat();
   }
@@ -218,7 +232,7 @@ class Game {
     const known = [];
     const unknown = [];
 
-    Object.entries(this.map[this.currentLocationKey]).forEach(
+    Object.entries(this.map[this.currentLocationKey] || {}).forEach(
       ([direction, nextLocationKey]) => {
         const nextLocation = this.assets[nextLocationKey];
         if (nextLocation.visited) {

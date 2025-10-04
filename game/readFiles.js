@@ -19,14 +19,13 @@ async function readFiles(parentFolder) {
       result.map = game.map;
       result.synonyms = game.synonyms || {};
       result.title = game.title || "Adventure";
+      result.introduction = game.introduction || [];
     } catch (err) {
       result.errors.push(`'game.yaml' not parseable: ${err}`);
     }
   } else {
     result.errors.push("'game.yaml' not found");
   }
-
-  // TODO: EXTRACT
 
   if (structure.includes("assets")) {
     const allAssetFiles = await readdir(path.join(parentFolder, "assets"));
@@ -35,20 +34,12 @@ async function readFiles(parentFolder) {
         .filter(file => file.endsWith(".yaml"))
         .map(async file => {
           try {
-            const definition = await readYaml(["assets", file]);
-            if (typeof definition.description === "string") {
-              definition.description = [].concat(definition.description);
-            }
-            definition.key = removeSuffix(file);
-            definition.items = definition.items || [];
-            normalizeActions(definition);
-            definition.actions.forEach(action => {
-              if (action.verb && !result.synonyms[action.verb]) {
-                result.synonyms[action.verb] = [];
-              }
-            });
-
-            return definition;
+            const asset = await readYaml(["assets", file]);
+            asset.file = file;
+            asset.key = removeSuffix(file);
+            normalizeAsset(asset, result);
+            collectVerbs(asset, result);
+            return asset;
           } catch (err) {
             console.log(err);
             result.errors.push(`File '${file}' not parseable: ${err}`);
@@ -70,19 +61,55 @@ async function readFiles(parentFolder) {
   return result;
 }
 
-function normalizeActions(definition) {
-  definition.actions = definition.actions || [];
-  definition.actions.forEach(action => {
+function normalizeAsset(asset, result) {
+  asset.description = normalizeDescription(asset.description, result);
+  normalizeItems(asset, result);
+  normalizeActions(asset, result);
+}
+
+function normalizeDescription(description) {
+  // TODO what if description is null?
+  if (Array.isArray(description)) {
+    return description;
+  }
+  if (typeof description === "object") {
+    return description;
+  }
+  // TODO force to string?
+  return [].concat(description);
+}
+
+function normalizeItems(asset, result) {
+  asset.items = asset.items || [];
+  if (!Array.isArray(asset.items) || asset.items.some(item => typeof item !== 'string')) {
+    result.errors.push(`File: ${asset.file} - 'items' should be an array of strings.`);
+  }
+}
+
+function normalizeActions(asset) {
+  if (!asset.actions) {
+    asset.actions = [];
+  }
+  // TODO validation?
+  asset.actions.forEach(action => {
     if (action.when) {
-      Object.values(action.when).forEach(value => {
-        value.set = [].concat(value.set || []);
-        value.add = [].concat(value.add || []);
-        value.remove = [].concat(value.remove || []);
-      });
+      Object.values(action.when).forEach(normalizeAction);
     } else {
-      action.set = [].concat(action.set || []);
-      action.add = [].concat(action.add || []);
-      action.remove = [].concat(action.remove || []);
+      normalizeAction(action);
+    }
+  });
+}
+
+function normalizeAction(action) {
+  action.set = [].concat(action.set || []);
+  action.add = [].concat(action.add || []);
+  action.remove = [].concat(action.remove || []);
+}
+
+function collectVerbs(asset, result) {
+  asset.actions.forEach(action => {
+    if (action.verb && !result.synonyms[action.verb]) {
+      result.synonyms[action.verb] = [];
     }
   });
 }
