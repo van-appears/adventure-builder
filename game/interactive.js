@@ -9,10 +9,12 @@ async function start() {
   const configuration = await readFiles(process.argv[2]);
   if (configuration.errors.length) {
     configuration.errors.forEach(error => console.log(error));
+    configuration.warnings.forEach(warning => console.log(warning));
     console.log("Please correct your game definition and try again.");
     return;
   }
 
+  configuration.warnings.forEach(warning => console.log(warning));
   let terminated = false;
   try {
     const game = new Game(configuration);
@@ -34,6 +36,9 @@ async function interactive(game) {
     const output = game.next(answer);
     (output || []).forEach(line => console.log(line));
   }
+  (game.gameoverMessages[game.gameoverStatus] || []).forEach(line =>
+    console.log(line)
+  );
 }
 
 (async function () {

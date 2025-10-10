@@ -7,6 +7,6 @@ actions:
     when:
       has key:
         message: You open the door and leave the house.
-        finish: true
+        gameover: success
       not has key:
         message: The door is locked.

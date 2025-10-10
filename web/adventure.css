@@ -13,9 +13,10 @@ body {
   text-align: center;
 }
 
-.started .loading,
 .finished .loading,
-.finished .input {
+.finished .input,
+.errors .history,
+.errors .input {
   display: none;
 }
 
@@ -59,6 +60,10 @@ body {
 .history {
   height: calc(100% - 30px);
   overflow-y: scroll;
+}
+
+.information {
+  color: #dddddd;
 }
 
 .spacer {

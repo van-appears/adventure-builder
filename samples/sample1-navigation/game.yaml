@@ -3,18 +3,18 @@ introduction: You have woken up in a strange location. You don't know how you go
 map:
   start: room1
   room1:
-    north: room2
+    north: room3
     east: room3
-    south: room2
-    west: room1
+    south: room3
+    west: room2
   room2:
     north: room1
     east: room1
-    south: room2
+    south: room3
     west: room3
   room3:
     north: room1
     east: room4
     south: room2
-    west: room3
+    west: room1
   room4:

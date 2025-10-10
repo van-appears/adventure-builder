@@ -11,6 +11,7 @@ class Game {
     this.inventory = {};
     this.state = {};
     this.gameover = false;
+    this.gameoverMessages = cloneConfig.gameoverMessages;
   }
 
   start() {
@@ -55,6 +56,7 @@ class Game {
 
   doControlAction(action) {
     if (action === "quit") {
+      this.gameoverStatus = null;
       this.gameover = true;
       return ["Goodbye!"];
     }
@@ -169,7 +171,8 @@ class Game {
           );
           delete this.inventory[key];
         });
-        if (actionItem.finish) {
+        if (actionItem.gameover) {
+          this.gameoverStatus = actionItem.gameover;
           this.gameover = true;
         }
         return actionItem.message;
@@ -189,13 +192,13 @@ class Game {
               return !(
                 this.inventory[key] ||
                 this.state[key] ||
-                key === currentLocation
+                key === this.currentLocationKey
               );
             }
             return (
               this.inventory[part] ||
               this.state[part] ||
-              part === currentLocation
+              part === this.currentLocationKey
             );
           })
         ) {
@@ -253,7 +256,9 @@ class Game {
     if (!items.length) {
       return [];
     }
-    return ["Here there is: " + items.join(", ")];
+    return [
+      "Here there is: " + items.map(key => this.assets[key].name.join(", "))
+    ];
   }
 
   listInventory() {

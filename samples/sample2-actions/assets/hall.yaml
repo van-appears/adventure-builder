@@ -10,11 +10,11 @@ actions:
   - verb: open
     noun: door
     message: You open the door and leave the house.
-    finish: true
+    gameover: success
   - when:
       honey_eaten:
         message:
           - The bear smells the honey on you.
           - You smell tasty.
           - The bear eats you.
-        finsih: true
+        gameover: failure

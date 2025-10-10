@@ -4,6 +4,8 @@ TODO
 1. name / alt name
 4. stylable game
 7. parser integrity
+  - todo warning verb synonyms
+  - todo warning 'add' and 'remove'
 8. docs!
 9. localisation
 12. 'timer' actions
@@ -13,11 +15,10 @@ TODO
 17. save
 19. instructions
 20. arrow keys for command history
-21. yaml or yml
-22. Show parsing errors in browser
 23. watch yaml folder
 24. items in description
 25. interactive items
+26. map off
 
 DONE
 2. and / else / not state checks
@@ -27,3 +28,5 @@ DONE
 10. 'visit' actions
 14. simplify navigation to N/E/W/S
 18. introductory text
+21. yaml or yml
+22. Show parsing errors in browser

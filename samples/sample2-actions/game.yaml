@@ -14,3 +14,8 @@ synonyms:
   open: unlock
   break: smash
   eat: consume
+gameover:
+  success:
+    - Hurray!
+  failure:
+    - Bad luck.
