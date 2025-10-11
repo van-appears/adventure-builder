@@ -1,12 +1,16 @@
 description:
   - You are standing in the hall of a house.
   - There is a door here to the outside world.
+items:
+  - wrong_key
 actions:
   - verb: open
     noun: door
     when:
-      has key:
+      key:
         message: You open the door and leave the house.
         gameover: success
-      not has key:
+      wrong_key and not key:
+        message: You try the key, but it doesn't work.
+      else:
         message: The door is locked.

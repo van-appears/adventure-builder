@@ -108,22 +108,25 @@ class Game {
 
   doTakeItem(noun) {
     const currentLocation = this.currentLocation();
-    if (currentLocation.items.includes(noun)) {
-      const asset = this.assets[noun];
-      if (asset.immovable) {
-        if (typeof asset.immovable === "string") {
-          return [asset.immovable];
+    const locationItem = this.findLocationItem(currentLocation, noun);
+    if (locationItem) {
+      if (locationItem.immovable) {
+        if (typeof locationItem.immovable === "string") {
+          return [locationItem.immovable];
         }
         return ["You can't take that item."];
       }
-      this.inventory[noun] = true;
+
+      this.inventory[locationItem.key] = true;
       currentLocation.items = currentLocation.items.filter(
-        item => item !== noun
+        itemKey => itemKey !== locationItem.key
       );
-      return ["You have taken: " + noun];
+      return ["You have taken: " + locationItem.name];
     }
-    if (inventory[noun]) {
-      return ["You already have: " + noun];
+
+    const inventoryItem = this.findInventoryItem(noun);
+    if (inventoryItem) {
+      return ["You already have: " + inventoryItem.name];
     }
     return ["There isn't one of those here."];
   }
@@ -138,18 +141,28 @@ class Game {
     }
 
     const item =
-      currentLocation.items.find(i => i === command.noun) ||
-      inventory[command.noun];
-    if (item && this.assets[command.noun]) {
-      const itemAction = this.assets[command.noun].actions.find(
-        a => a.verb === command.verb
-      );
+      this.findLocationItem(currentLocation, command.noun) ||
+      this.findInventoryItem(command.noun);
+    if (item) {
+      const itemAction = item.actions.find(a => a.verb === command.verb);
       if (itemAction) {
         return this.processActions(itemAction);
       }
     }
 
     return ["I don't understand that."];
+  }
+
+  findLocationItem(location, noun) {
+    return location.items
+      .map(itemKey => this.assets[itemKey])
+      .find(item => item.key === noun || item.name === noun);
+  }
+
+  findInventoryItem(noun) {
+    return Object.keys(this.inventory)
+      .map(itemKey => this.assets[itemKey])
+      .find(item => item.key === noun || item.name === noun);
   }
 
   processActions(action) {
@@ -204,7 +217,8 @@ class Game {
         ) {
           return check;
         }
-      });
+      })
+      .filter(x => x);
 
     if (matches.length == 0 && when.else) {
       matches.push("else");
@@ -257,7 +271,7 @@ class Game {
       return [];
     }
     return [
-      "Here there is: " + items.map(key => this.assets[key].name.join(", "))
+      "Here there is: " + items.map(key => this.assets[key].name).join(", ")
     ];
   }
 
@@ -265,7 +279,12 @@ class Game {
     if (!Object.keys(this.inventory).length) {
       return ["You are not carrying anything"];
     }
-    return ["You are carrying: " + Object.keys(this.inventory).join(", ")];
+    return [
+      "You are carrying: " +
+        Object.keys(this.inventory)
+          .map(key => this.assets[key].name)
+          .join(", ")
+    ];
   }
 }
 

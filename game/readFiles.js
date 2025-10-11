@@ -16,6 +16,7 @@ const expectedAssetKeys = [
   "name",
   "description",
   "items",
+  "immovable",
   "actions"
 ];
 
