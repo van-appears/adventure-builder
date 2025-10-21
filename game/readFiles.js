@@ -70,7 +70,10 @@ async function readFiles(parentFolder) {
 async function buildGame(files, result) {
   const { gameFile } = files;
   if (gameFile == null) {
-    result.errors.push("File 'game.yaml' or 'game.yml' not found");
+    result.errors.push({
+      from: { file: "/" },
+      message: "File 'game.yaml' or 'game.yml' not found"
+    });
   } else {
     try {
       const game = await files.readYaml([gameFile]);
@@ -97,6 +100,9 @@ function normalizeMap(game, result) {
 function normalizeSynonyms(game, result) {
   //todo object type validation
   result.synonyms = game.synonyms || {};
+  Object.keys(result.synonyms).forEach(key => {
+    result.synonyms[key] = asStringArray(result.synonyms[key]);
+  });
 }
 
 function normalizeTitle(game, result, files) {

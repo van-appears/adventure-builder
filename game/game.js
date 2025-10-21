@@ -1,6 +1,8 @@
 import cloneDeep from "clone-deep";
 import parser from "./parser.js";
 
+const clean = str => (str ? str.toLowerCase().trim() : null);
+
 class Game {
   constructor(config) {
     const cloneConfig = cloneDeep(config);
@@ -10,6 +12,8 @@ class Game {
     this.assets = cloneConfig.assets;
     this.inventory = {};
     this.state = {};
+    this.currentQuestion = null;
+    this.currentAnswer = null;
     this.gameover = false;
     this.gameoverMessages = cloneConfig.gameoverMessages;
   }
@@ -24,6 +28,9 @@ class Game {
   }
 
   next(command) {
+    if (this.currentQuestion) {
+      return this.doAsk(command);
+    }
     const parsed = parser(command, this.synonyms);
     if (parsed.type === "MOVE") {
       return this.doMove(parsed.direction);
@@ -52,6 +59,19 @@ class Game {
       .concat(this.describeLocation())
       .concat(this.describeItems())
       .concat(this.describeExits());
+  }
+
+  doAsk(answer) {
+    const { text, parent } = this.currentQuestion;
+    const questionAction = parent.actions.find(
+      a => clean(a.asked) === clean(text)
+    );
+    this.currentQuestion = null;
+    this.currentAnswer = answer;
+    if (!questionAction) {
+      return ["I don't understand that."];
+    }
+    return this.processActions(questionAction, parent);
   }
 
   doControlAction(action) {
@@ -86,7 +106,9 @@ class Game {
 
       const visitAction = currentLocation.actions.find(action => !action.verb);
       if (visitAction) {
-        description = description.concat(this.processActions(visitAction));
+        description = description.concat(
+          this.processActions(visitAction, currentLocation)
+        );
       }
       return description;
     }
@@ -96,8 +118,9 @@ class Game {
 
   doDescribeItem(noun) {
     const currentLocation = this.currentLocation();
-    if (currentLocation.items.includes(noun) || this.inventory[noun]) {
-      const { description } = this.assets[noun];
+    const locationItem = this.findLocationItem(currentLocation, noun);
+    if (locationItem) {
+      const { description } = locationItem;
       if (typeof description === "object" && description.when) {
         return this.getPassingObjects(description.when);
       }
@@ -137,7 +160,7 @@ class Game {
       a => a.verb === command.verb && a.noun === command.noun
     );
     if (locationAction) {
-      return this.processActions(locationAction);
+      return this.processActions(locationAction, currentLocation);
     }
 
     const item =
@@ -146,7 +169,7 @@ class Game {
     if (item) {
       const itemAction = item.actions.find(a => a.verb === command.verb);
       if (itemAction) {
-        return this.processActions(itemAction);
+        return this.processActions(itemAction, item);
       }
     }
 
@@ -165,7 +188,7 @@ class Game {
       .find(item => item.key === noun || item.name === noun);
   }
 
-  processActions(action) {
+  processActions(action, parent) {
     const currentLocation = this.currentLocation();
     const actions = action.when
       ? this.getPassingObjects(action.when)
@@ -184,40 +207,30 @@ class Game {
           );
           delete this.inventory[key];
         });
+        if (actionItem.ask) {
+          this.currentQuestion = {
+            text: actionItem.ask,
+            parent
+          };
+        }
         if (actionItem.gameover) {
           this.gameoverStatus = actionItem.gameover;
           this.gameover = true;
         }
         return actionItem.message;
       })
-      .filter(x => x);
+      .filter(x => x)
+      .flat();
   }
 
   getPassingObjects(when) {
     const matches = Object.keys(when)
       .filter(x => x)
-      .map(check => {
-        const checkParts = check.split(" and ");
-        if (
-          checkParts.every(part => {
-            if (part.startsWith("not ")) {
-              const key = part.substring(4);
-              return !(
-                this.inventory[key] ||
-                this.state[key] ||
-                key === this.currentLocationKey
-              );
-            }
-            return (
-              this.inventory[part] ||
-              this.state[part] ||
-              part === this.currentLocationKey
-            );
-          })
-        ) {
-          return check;
-        }
-      })
+      .map(check =>
+        this.currentAnswer
+          ? this.isPassingAsk(check)
+          : this.isPassingChecks(check)
+      )
       .filter(x => x);
 
     if (matches.length == 0 && when.else) {
@@ -232,6 +245,33 @@ class Game {
       .map(check => when[check])
       .filter(x => x)
       .flat();
+  }
+
+  isPassingChecks(check) {
+    const checkParts = check.split(" and ");
+    if (
+      checkParts.every(part => {
+        if (part.startsWith("not ")) {
+          const key = part.substring(4);
+          return !(
+            this.inventory[key] ||
+            this.state[key] ||
+            key === this.currentLocationKey
+          );
+        }
+        return (
+          this.inventory[part] ||
+          this.state[part] ||
+          part === this.currentLocationKey
+        );
+      })
+    ) {
+      return check;
+    }
+  }
+
+  isPassingAsk(check) {
+    return clean(check) === clean(this.currentAnswer);
   }
 
   describeLocation() {

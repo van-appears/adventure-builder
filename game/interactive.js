@@ -32,7 +32,13 @@ async function start() {
 async function interactive(game) {
   (game.start() || []).forEach(line => console.log(line));
   while (!game.gameover) {
-    const answer = await rl.question("> ");
+    let answer;
+    if (game.currentQuestion) {
+      console.log(`"${game.currentQuestion.text}"`);
+      answer = await rl.question(">> ");
+    } else {
+      answer = await rl.question("> ");
+    }
     const output = game.next(answer);
     (output || []).forEach(line => console.log(line));
   }
