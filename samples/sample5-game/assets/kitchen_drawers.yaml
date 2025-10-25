@@ -1,0 +1,33 @@
+name: drawers
+immovable: true
+description:
+  when:
+    :
+      - It is a set of drawers.
+    drawers_opened and not hammer:
+      - The third drawer contains a hammer.
+actions:
+  - verb: open
+    when:
+      not drawers_opened and not hammer:
+        message:
+          - There are a few drawers, you check them one by one.
+          - The first looks like it should have cutlery in it, but is completely empty.
+          - The second drawer is also empty.
+          - The third drawer contains a hammer.
+        set: drawers_opened
+        add: hammer
+      drawers_opened and not hammer:
+        message:
+          - You check the drawers again.
+          - The first looks like it should have cutlery in it, but is completely empty.
+          - The second drawer is also empty.
+          - The third drawer contains a hammer.
+          - Try and remember this time.
+      else:
+        message:
+          - You check the drawers again.
+          - The first looks like it should have cutlery in it, but is completely empty.
+          - The second drawer is also empty.
+          - The third drawer is empty.
+          - Empty drawers, all the way down!

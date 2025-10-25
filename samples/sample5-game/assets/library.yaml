@@ -1,0 +1,16 @@
+description:
+  - You are in a darkened library.
+  - There is no window and the light does not work.
+  - Every wall is shelved and there appear to be hundreds of dusty books here.
+  - Maybe there is something here if you knew what to look for and could see it.
+actions:
+  - verb: read
+    noun: earthsea
+    when:
+      not candle_lit:
+        message: You can't see well enough to read anything.
+      snall_key:
+        message: You open the book to find it is hollow in the middle, now empty.
+      else:
+        message: You open the book to find it is hollow in the middle, and containing a key.
+        add: kitchen_cupboard_key

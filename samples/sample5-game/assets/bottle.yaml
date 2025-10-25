@@ -1,0 +1,27 @@
+description:
+  when:
+    bottle_smashed:
+      message: There is the smashed remains of a large glass bottle
+    not matches:
+      message: Amidst the wreckage is a small box of matches.
+    else:
+      message:
+        - It is a large glass bottle. Very large.
+        - One of those champagne bottles with the weird names probably.
+        - There seems to be something at the bottom of it.
+actions:
+  - verb: break
+    when:
+      bottle_smashed:
+        message: It's already smashed. Nothing to be gained from making it smasheder.
+      hammer:
+        message:
+          - You smash the bottom to smithereens with the hammer.
+          - You keep going until there are only tiny little pieces left.
+          - It was quite satisfying.
+          - Amidst the wreckage is a small box of matches.
+        add: matches
+        set: bottle_smashed
+        remove: bottle
+      else:
+        message: You try breaking the bottle on the ground, but it is quite resilient and remains intact.

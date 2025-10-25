@@ -1,0 +1,52 @@
+success:
+  steps: |-
+    north
+    open drawers
+    take hammer
+    smash bottle
+    take matches
+    south
+    east
+    describe photo
+    north
+    take notebook
+    read notebook
+    south
+    south
+    take candle
+    north
+    west
+    south
+    open chest
+    1011
+    take key
+    east
+    light candle
+    read earthsea
+    take key
+    west
+    north
+    north
+    open cupboards
+    take honey
+    south
+    give honey
+    open door
+    inventory
+  state:
+    - bottle_smashed
+  inventory:
+    - hammer
+    - matches
+  gameover: success
+
+stupiddeath1:
+  steps: |-
+    north
+    open drawers
+    take hammer
+    south
+    throw hammer
+  state:
+  inventory:
+  gameover: died

@@ -1,0 +1,16 @@
+description:
+  when:
+    eaten_honey:
+      It is an empty jar of local honey.
+    else:
+      It is a mostly full jar of local honey.
+actions:
+  - verb: consume
+    when:
+      eaten_honey:
+        message: You have already eaten the honey. It was delicious.
+      else:
+        message:
+          - You start eating the honey.
+          - It is delicious, but you are a terribly messy eater and it gets everywhere, all down your front.
+        set: eaten_honey

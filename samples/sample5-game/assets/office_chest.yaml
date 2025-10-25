@@ -1,0 +1,19 @@
+name: chest
+description:
+  - It is a heavy wooden chest, made of... let's say oak.
+  - It has a combination lock on the outside, looks like it needs four digits.
+actions:
+  - verb: open
+    when:
+      not chest_opened:
+        ask: What combination?
+      else:
+        message: The chest is already opened.
+  - asked: What combination?
+    when:
+      1011:
+        message: You open the chest to find a key inside.
+        set: chest_opened
+        add: front_door_key
+      else:
+        message: No, that didn't seem to work.

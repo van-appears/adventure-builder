@@ -1,0 +1,76 @@
+description:
+  when:
+    :
+      - You are standing in the hall of a house.
+      - The windows are barred, so it looks like the door is the only way out.
+    bear_fed:
+      - There is a sleepy, well-fed bear in the corner of the room.
+    else:
+      - However, there is a grumpy looking bear in front of the exit.
+actions:
+  - verb: visit
+    when:
+      eaten_honey:
+        message:
+          - The bear smells the honey that you dropped all over youself.
+          - It decides you must be good to eat.
+          - So it eats you.
+        gameover: died
+  - verb: attack
+    noun: bear
+    message:
+      - The bear didn't like that, it is a wild animal after all.
+      - It rips your head off and starts to eat your body.
+    gameover: died
+  - verb: give
+    noun: honey
+    when:
+      honey:
+        message:
+          - You open the jar of honey and set it near the bear.
+          - The bear sniffs it, picks it up, moves to the corner of the room, and starts eating.
+          - The door is no longer blocked!
+        set: bear_fed
+      else:
+        message: You don't have any honey.
+  - verb: give
+    noun: hotsauce
+    when:
+      hotsauce:
+        message:
+          - You open the bottle of hotsauce and set it near the bear.
+          - The bear sniffs it, picks it up, and tries some of it.
+          - There is a pause.
+          - The bear looks unhappy.
+          - The bear looks angry.
+          - The bear knows you are to blame.
+          - The bear decides you might taste nicer than the hotsauce.
+          - The bear eats you.
+        gameover: died
+      else:
+        message: You don't have any hotsauce.
+  - verb: throw
+    noun: hammer
+    when:
+      hammer:
+        message:
+          - You throw the hammer with excellent aim.
+          - It makes a lovely 'boink' noise as it bounces off the bear's head.
+          - There is a pause.
+          - The bear looks unhappy.
+          - The bear looks angry.
+          - With excellent aim, the bear's claws rip your chest open.
+          - The are some lovely crunching and squelching noises as the bear eats you.
+        gameover: died
+      else:
+        message: You don't have a hammer.
+  - verb: open
+    noun: door
+    when:
+      bear_fed and front_door_key:
+        message: You unlock the door and walk out into the sunshine.
+        gameover: success
+      bear_fed and not front_door_key:
+        message: The door is locked! You don't have the right key.
+      else:
+        message: I don't think so, there's a grumpy bear blocking the door.

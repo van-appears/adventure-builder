@@ -1,0 +1,19 @@
+name: hot sauce
+description:
+  when:
+    :
+      - It is a small bottle of hotsauce with the label showing a chicken wearing a luchador mask.
+    eaten_hotsauce:
+      - It is empty.
+actions:
+  - verb: consume
+    when:
+      eaten_hotsauce:
+        message: You have already eaten the hotsauce. You regret it.
+      else:
+        message:
+          - You start drinking the whole bottle of hotsauce.
+          - Aarrgh... so hot... so painful... your stomach hurts.
+          - You want to be sick.
+          - This was a bad idea.
+        set: eaten_hotsauce

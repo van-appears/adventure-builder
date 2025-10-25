@@ -1,0 +1,4 @@
+description: It is a small box of matches.
+actions:
+  - verb: light
+    message: You light a match. It gives off a feeble glow.

@@ -1,0 +1,8 @@
+description:
+  - The notebook is empty, except for an instruction written on the first page.
+  - On the page is written 'Read Earthsea'
+actions:
+  - verb: read
+    message:
+      - The notebook is empty, except for an instruction written on the first page.
+      - On the page is written 'Read Earthsea'

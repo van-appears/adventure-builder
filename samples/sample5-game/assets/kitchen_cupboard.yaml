@@ -1,0 +1,24 @@
+name: cupboards
+immovable: true
+description:
+  when:
+    :
+      - It is a cupboard. There's not much to say about cupboards.
+    not cupboard_opened:
+      - It is also locked, that's probably important to say.
+actions:
+  - verb: open
+    when:
+      cupboard_opened:
+        message: You already opened it.
+      front_door_key and not kitchen_cupboard_key:
+        message: That key doesn't seem to open this cupboard.
+      kitchen_cupboard_key:
+        message:
+          - You unlock the cupboard with the small key.
+          - There is a bottle of hotsauce and a pot of honey inside.
+        add:
+          - honey
+          - hotsauce
+      else:
+        message: You can't, the cupboard is locked.

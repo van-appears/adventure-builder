@@ -1,0 +1,18 @@
+description:
+  when:
+    candle_lit:
+      message: It is a lit candle giving off a faint but interesting scnet. Careful now!
+    else:
+      message:
+        - It is a tall white candle.
+        - There is a label on the side that says it is watermelon and nettle scented. Odd.
+actions:
+  - verb: light
+    when:
+      candle_lit:
+        message: It's already lit!
+      matches:
+        message: You light the candle with one of the matches. Careful now!
+        set: candle_lit
+      else:
+        message: You don't have anything to light it with.

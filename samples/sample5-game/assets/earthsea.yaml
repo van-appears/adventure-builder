@@ -1,0 +1,9 @@
+description: It's a copy of the classic 'Earthsea' novel, by Ursula K. Le Guin.
+actions:
+  - verb: read
+    when:
+      small_key:
+        message: You open the book to find it is hollow in the middle, now empty.
+      else:
+        message: You open the book to find it is hollow in the middle, and containing a key.
+        take: small_key

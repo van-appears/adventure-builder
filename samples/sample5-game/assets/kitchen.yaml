@@ -1,0 +1,9 @@
+description:
+  - You are in a smallish kitchen, it looks quite bare.
+  - There is a fridge, a set of locked cupboards, and some drawers.
+  - There is also a very large glass bottle beside the sink.
+items:
+  - kitchen_cupboard
+  - kitchen_fridge
+  - bottle
+  - kitchen_drawers

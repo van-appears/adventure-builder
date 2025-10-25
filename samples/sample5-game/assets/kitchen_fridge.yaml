@@ -1,0 +1,6 @@
+name: fridge
+immovable: true
+description: It is a fridge. It seems to be working.
+actions:
+  - verb: open
+    message: You open the fridge to find... nothing, not even a nubbin of cheese.

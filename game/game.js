@@ -13,7 +13,6 @@ class Game {
     this.inventory = {};
     this.state = {};
     this.currentQuestion = null;
-    this.currentAnswer = null;
     this.gameover = false;
     this.gameoverMessages = cloneConfig.gameoverMessages;
   }
@@ -67,11 +66,10 @@ class Game {
       a => clean(a.asked) === clean(text)
     );
     this.currentQuestion = null;
-    this.currentAnswer = answer;
     if (!questionAction) {
-      return ["I don't understand that."];
+      return [];
     }
-    return this.processActions(questionAction, parent);
+    return this.processActions(questionAction, parent, answer);
   }
 
   doControlAction(action) {
@@ -188,10 +186,10 @@ class Game {
       .find(item => item.key === noun || item.name === noun);
   }
 
-  processActions(action, parent) {
+  processActions(action, parent, answer) {
     const currentLocation = this.currentLocation();
     const actions = action.when
-      ? this.getPassingObjects(action.when)
+      ? this.getPassingObjects(action.when, answer)
       : [].concat(action);
     return actions
       .map(actionItem => {
@@ -223,14 +221,15 @@ class Game {
       .flat();
   }
 
-  getPassingObjects(when) {
+  getPassingObjects(when, answer) {
     const matches = Object.keys(when)
       .filter(x => x)
-      .map(check =>
-        this.currentAnswer
-          ? this.isPassingAsk(check)
-          : this.isPassingChecks(check)
-      )
+      .map(check => {
+        const isPassing = answer
+          ? clean(check) === clean(answer)
+          : this.isPassingChecks(check);
+        return isPassing ? check : null;
+      })
       .filter(x => x);
 
     if (matches.length == 0 && when.else) {
@@ -249,29 +248,21 @@ class Game {
 
   isPassingChecks(check) {
     const checkParts = check.split(" and ");
-    if (
-      checkParts.every(part => {
-        if (part.startsWith("not ")) {
-          const key = part.substring(4);
-          return !(
-            this.inventory[key] ||
-            this.state[key] ||
-            key === this.currentLocationKey
-          );
-        }
-        return (
-          this.inventory[part] ||
-          this.state[part] ||
-          part === this.currentLocationKey
+    return checkParts.every(part => {
+      if (part.startsWith("not ")) {
+        const key = part.substring(4);
+        return !(
+          this.inventory[key] ||
+          this.state[key] ||
+          key === this.currentLocationKey
         );
-      })
-    ) {
-      return check;
-    }
-  }
-
-  isPassingAsk(check) {
-    return clean(check) === clean(this.currentAnswer);
+      }
+      return (
+        this.inventory[part] ||
+        this.state[part] ||
+        part === this.currentLocationKey
+      );
+    });
   }
 
   describeLocation() {
