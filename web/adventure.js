@@ -3,11 +3,11 @@ import Game from "../game/game";
 
 const $ = query => document.querySelector(query);
 
-function addLine(line, user) {
+function addLine(line, style) {
   const lineEl = document.createElement("div");
-  lineEl.className = user ? "textInput" : "textOutput";
   const spanEl = document.createElement("span");
   spanEl.innerText = line;
+  lineEl.className = style;
   lineEl.append(spanEl);
   $(".history").insertBefore(lineEl, $(".spacer"));
 }
@@ -53,7 +53,7 @@ if (!config.errors.length) {
   commandInput.value = "";
 
   const game = new Game(config);
-  game.start().forEach(line => addLine(line, false));
+  game.start().forEach(line => addLine(line, "textOutput"));
 
   commandInput.addEventListener("keyup", e => {
     if (e.key === "Enter" || e.keyCode === 13) {
@@ -61,8 +61,11 @@ if (!config.errors.length) {
       if (input) {
         commandInput.value = "";
         const output = game.next(input);
-        addLine(input, true);
-        (output || []).forEach(line => addLine(line, false));
+        addLine(input, "textInput");
+        (output || []).forEach(line => addLine(line, "textOutput"));
+        if (game.currentQuestion) {
+          addLine(game.currentQuestion.text, "questionOutput");
+        }
         history.scrollTo(0, history.scrollHeight);
 
         if (game.gameover) {
