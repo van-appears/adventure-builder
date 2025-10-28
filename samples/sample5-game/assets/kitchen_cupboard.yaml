@@ -13,10 +13,11 @@ actions:
         message: You already opened it.
       front_door_key and not kitchen_cupboard_key:
         message: That key doesn't seem to open this cupboard.
-      kitchen_cupboard_key:
+      kitchen_cupboard_key and not cupboard_opened:
         message:
           - You unlock the cupboard with the small key.
           - There is a bottle of hotsauce and a pot of honey inside.
+        set: cupboard_opened
         add:
           - honey
           - hotsauce
