@@ -1,5 +1,5 @@
 name: fridge
-immovable: true
+takeable: true
 description: It is a fridge. It seems to be working.
 actions:
   - verb: open

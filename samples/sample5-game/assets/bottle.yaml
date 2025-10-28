@@ -1,14 +1,11 @@
 description:
   when:
-    bottle_smashed:
-      message: There is the smashed remains of a large glass bottle
-    not matches:
-      message: Amidst the wreckage is a small box of matches.
+    bottle_smashed: There is the smashed remains of a large glass bottle
+    not matches: Amidst the wreckage is a small box of matches.
     else:
-      message:
-        - It is a large glass bottle. Very large.
-        - One of those champagne bottles with the weird names probably.
-        - There seems to be something at the bottom of it.
+      - It is a large glass bottle. Very large.
+      - One of those champagne bottles with the weird names probably.
+      - There seems to be something at the bottom of it.
 actions:
   - verb: break
     when:

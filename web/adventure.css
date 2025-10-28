@@ -21,10 +21,22 @@ body {
 }
 
 .wrapper {
-  width: 800px;
+  max-width: 800px;
   height: 100%;
   background: black;
   margin-inline: auto;
+  overflow-wrap: break-word;
+}
+
+.instructions {
+  color: #dddddd;
+  display: flex;
+  flex-direction: row;
+  padding: 0 5px;
+}
+
+.instructions + .textOutput {
+  padding-top: 20px;
 }
 
 .textInput span,
@@ -78,7 +90,7 @@ body {
 }
 
 .history {
-  height: calc(100% - 30px);
+  height: 100%;
   overflow-y: scroll;
 }
 

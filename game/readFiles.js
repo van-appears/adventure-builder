@@ -16,7 +16,7 @@ const expectedAssetKeys = [
   "name",
   "description",
   "items",
-  "immovable",
+  "takeable",
   "actions"
 ];
 
@@ -153,6 +153,7 @@ async function buildAssets(files, result) {
         normalizeDescription(asset, result);
         normalizeItems(asset, result, files);
         normalizeActions(asset, result);
+        normalizeTakeable(asset, result);
         validateUnexpectedKeys(asset, result, expectedAssetKeys);
         collectVerbs(asset, result);
         return asset;
@@ -225,6 +226,13 @@ function normalizeItems(asset, result, files) {
       from: asset,
       message: `'items' has entries that do not exist: ${unknownItems.join(", ")}.`
     });
+  }
+}
+
+function normalizeTakeable(asset, result) {
+  const { takeable } = asset;
+  if (takeable === null || takeable === undefined) {
+    takeable = true;
   }
 }
 

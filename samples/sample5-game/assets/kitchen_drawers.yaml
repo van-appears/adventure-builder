@@ -1,5 +1,5 @@
 name: drawers
-immovable: true
+takeable: true
 description:
   when:
     :

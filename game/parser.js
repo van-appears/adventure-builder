@@ -20,7 +20,7 @@ function parser(action, synonyms) {
   if (action.startsWith("take ")) {
     return { type: "TAKE", noun: action.substring(5).trim() };
   }
-  if (action.startsWith("describe ")) {
+  if (action.startsWith("describe ") || action.startsWith("examine ")) {
     return { type: "DESCRIBE", noun: action.substring(9).trim() };
   }
   if (["look", "quit", "inventory"].includes(action)) {

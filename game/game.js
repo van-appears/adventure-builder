@@ -1,5 +1,6 @@
 import cloneDeep from "clone-deep";
 import parser from "./parser.js";
+import locale from "./languages/en.json" with { type: "json" };
 
 const clean = str => (str ? str.toLowerCase().trim() : null);
 
@@ -15,6 +16,7 @@ class Game {
     this.currentQuestion = null;
     this.gameover = false;
     this.gameoverMessages = cloneConfig.gameoverMessages;
+    this.instructions = locale.instructions;
   }
 
   start() {
@@ -131,9 +133,9 @@ class Game {
     const currentLocation = this.currentLocation();
     const locationItem = this.findLocationItem(currentLocation, noun);
     if (locationItem) {
-      if (locationItem.immovable) {
-        if (typeof locationItem.immovable === "string") {
-          return [locationItem.immovable];
+      if (!locationItem.takeable) {
+        if (typeof locationItem.takeable === "string") {
+          return [locationItem.takeable];
         }
         return ["You can't take that item."];
       }

@@ -1,5 +1,5 @@
 name: cupboards
-immovable: true
+takeable: false
 description:
   when:
     :

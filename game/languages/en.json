@@ -1,0 +1,10 @@
+{
+  "instructions": [
+    "To perform an action use 'verb noun' e.g. 'take item', 'open door'.",
+    "To move use a direction e.g. 'north', 'southeast' or short verions e.g. 'n', 'se'.",
+    "To see information on a room use 'look'.",
+    "To see information on an item use 'describe' or 'examine' e.g. 'describe book'.",
+    "To see what you are carrying use command 'inventory'.",
+    "To start press Enter."
+  ]
+}

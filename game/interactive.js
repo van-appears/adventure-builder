@@ -30,6 +30,9 @@ async function start() {
 }
 
 async function interactive(game) {
+  (game.instructions || []).forEach(line => console.log(line));
+  await rl.question("");
+
   (game.start() || []).forEach(line => console.log(line));
   while (!game.gameover) {
     let answer;
