@@ -1,5 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { parse } from "yaml";
+import assetSchema from "./assetSchema.json" with { type: "json" };
+import Ajv2020 from "ajv/dist/2020.js";
 import path from "path";
 
 const expectedGameKeys = [
@@ -19,6 +21,8 @@ const expectedAssetKeys = [
   "takeable",
   "actions"
 ];
+const reservedWords = ["and", "not"];
+const ajv = new Ajv2020();
 
 async function readFiles(parentFolder) {
   const fileStructure = await readdir(parentFolder);
@@ -142,28 +146,35 @@ function normalizeGameoverMessages(game, result) {
 async function buildAssets(files, result) {
   const assets = await Promise.all(
     files.assetFiles.map(async file => {
+      let asset = null;
       try {
-        const asset = await files.readYaml(["assets", file]);
-        if (typeof asset !== "object") {
-          throw new Error("expected an object but got " + typeof asset);
-        }
-        asset.file = `assets/${file}`;
-        asset.key = removeSuffix(file);
-        normalizeName(asset, result);
-        normalizeDescription(asset, result);
-        normalizeItems(asset, result, files);
-        normalizeActions(asset, result);
-        normalizeTakeable(asset, result);
-        validateUnexpectedKeys(asset, result, expectedAssetKeys);
-        collectVerbs(asset, result);
-        return asset;
+        asset = await files.readYaml(["assets", file]);
       } catch (err) {
-        console.log(err);
         result.errors.push({
           from: { file },
           message: `File is not parseable: ${err.message}`
         });
+        return null;
       }
+
+      const valid = ajv.validate(assetSchema, asset);
+      if (!valid) {
+        console.log(file, ajv.errors);
+      }
+
+      if (typeof asset !== "object") {
+        throw new Error("expected an object but got " + typeof asset);
+      }
+      asset.file = `assets/${file}`;
+      asset.key = removeSuffix(file);
+      normalizeName(asset, result);
+      normalizeDescription(asset, result);
+      normalizeItems(asset, result, files);
+      normalizeActions(asset, result);
+      normalizeTakeable(asset, result);
+      validateUnexpectedKeys(asset, result, expectedAssetKeys);
+      collectVerbs(asset, result);
+      return asset;
     })
   );
 
@@ -199,11 +210,23 @@ function normalizeDescription(asset, result) {
   ) {
     asset.description = asStringArray(description);
   } else if (typeof description === "object") {
-    // TODO validate when
+    const nonWhen = Object.keys(description).filter(key => key !== "when");
+    if (!description.when && nonWhen.length) {
+      result.errors.push({
+        from: asset,
+        message: `No 'when' found in description, found unexpected keys instead: ${nonWhen.join(",")}.`
+      });
+    } else if (nonWhen.length) {
+      result.warnings.push({
+        from: asset,
+        message: `Found unexpected keys in description: ${nonWhen.join(",")}.`
+      });
+    } else {
+    }
   } else {
     result.errors.push({
       from: asset,
-      message: `'description' should be a string or an array of strings`
+      message: `'description' should be a string, array of strings, or 'when' clause.`
     });
   }
 }
@@ -232,7 +255,7 @@ function normalizeItems(asset, result, files) {
 function normalizeTakeable(asset, result) {
   const { takeable } = asset;
   if (takeable === null || takeable === undefined) {
-    takeable = true;
+    asset.takeable = true;
   }
 }
 
