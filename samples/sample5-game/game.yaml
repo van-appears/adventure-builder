@@ -1,7 +1,7 @@
 title: Sample5
 introduction: You have woken up in a strange location. You don't know how you got here.
+start: hall
 map:
-  start: hall
   hall:
     north: kitchen
     east: landing

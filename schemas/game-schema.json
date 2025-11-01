@@ -1,0 +1,85 @@
+{
+  "$id": "urn:van-appears.github.io:adventure-builder:game-schema",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Validation for adventure-builder game file",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["start"],
+  "properties": {
+    "file": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "start": {
+      "type": "string"
+    },
+    "introduction": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "map": {
+      "type": "object",
+      "patternProperties": {
+        "^.*$": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "north": {
+              "type": "string"
+            },
+            "south": {
+              "type": "string"
+            },
+            "east": {
+              "type": "string"
+            },
+            "west": {
+              "type": "string"
+            },
+            "northeast": {
+              "type": "string"
+            },
+            "northwest": {
+              "type": "string"
+            },
+            "southeast": {
+              "type": "string"
+            },
+            "southwest": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "synonyms": {
+      "type": "object",
+      "patternProperties": {
+        "^.*$": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

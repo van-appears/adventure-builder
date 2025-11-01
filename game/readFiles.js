@@ -1,26 +1,10 @@
 import { readdir, readFile } from "node:fs/promises";
 import { parse } from "yaml";
-import assetSchema from "./assetSchema.json" with { type: "json" };
+import assetSchema from "../schemas/asset-schema.json" with { type: "json" };
+import gameSchema from "../schemas/game-schema.json" with { type: "json" };
 import Ajv2020 from "ajv/dist/2020.js";
 import path from "path";
 
-const expectedGameKeys = [
-  "file",
-  "map",
-  "synonyms",
-  "title",
-  "introduction",
-  "gameover"
-];
-const expectedAssetKeys = [
-  "file",
-  "key",
-  "name",
-  "description",
-  "items",
-  "takeable",
-  "actions"
-];
 const reservedWords = ["and", "not"];
 const ajv = new Ajv2020();
 
@@ -67,6 +51,7 @@ async function readFiles(parentFolder) {
 
   await buildGame(files, result);
   await buildAssets(files, result);
+  validateAll(files, result);
   groupErrors(result);
   return result;
 }
@@ -79,67 +64,67 @@ async function buildGame(files, result) {
       message: "File 'game.yaml' or 'game.yml' not found"
     });
   } else {
+    let game = null;
     try {
-      const game = await files.readYaml([gameFile]);
-      game.file = result.file = gameFile;
-      normalizeMap(game, result, files);
-      normalizeSynonyms(game, result, files);
-      normalizeTitle(game, result, files);
-      normalizeIntroduction(game, result, files);
-      normalizeGameoverMessages(game, result, files);
-      validateUnexpectedKeys(game, result, expectedGameKeys);
+      game = await files.readYaml([gameFile]);
     } catch (err) {
-      console.log(err);
-      result.errors.push(`File '${gameFile}' - not parseable: ${err}`);
+      result.errors.push({
+        from: { file },
+        message: `File '${gameFile}' is not parseable: ${err.message}`
+      });
+      return null;
     }
+
+    game.file = result.file = gameFile;
+    const valid = ajv.validate(gameSchema, game);
+    if (!valid) {
+      ajv.errors.forEach(error => {
+        result.errors.push({
+          from: game,
+          message: `${error.instancePath} - ${error.message}`,
+          error
+        });
+      });
+    }
+
+    normalizeMap(game, result);
+    normalizeSynonyms(game, result);
+    normalizeTitle(game, result);
+    normalizeIntroduction(game, result);
+    normalizeGameoverMessages(game, result);
   }
 }
 
 function normalizeMap(game, result) {
-  //todo object type validation
-  //todo validate against assets
   result.map = game.map;
 }
 
 function normalizeSynonyms(game, result) {
-  //todo object type validation
   result.synonyms = game.synonyms || {};
   Object.keys(result.synonyms).forEach(key => {
     result.synonyms[key] = asStringArray(result.synonyms[key]);
   });
 }
 
-function normalizeTitle(game, result, files) {
-  const { title, file } = game;
-  if (title === undefined || title === null || typeof title === "string") {
-    result.title = title || "Adventure";
-  } else {
-    result.errors.push({
-      from: game,
-      message: `(Optional) 'title' should be a string.`
+function normalizeTitle(game, result) {
+  const { title } = game;
+  if (title === undefined || title === null) {
+    result.title = "Adventure";
+    result.warnings.push({
+      from: asset,
+      message: `No title, using fallback.`
     });
+  } else {
+    result.title = title;
   }
 }
 
-function normalizeIntroduction(game, result, files) {
-  const { introduction, file } = game;
-  if (
-    introduction === undefined ||
-    introduction === null ||
-    typeof introduction === "string" ||
-    validateStringArray(introduction)
-  ) {
-    result.introduction = asStringArray(introduction);
-  } else {
-    result.errors.push({
-      from: game,
-      message: `(Optional) 'introduction' should be a string or an array of strings.`
-    });
-  }
+function normalizeIntroduction(game, result) {
+  const { introduction } = game;
+  result.introduction = asStringArray(introduction);
 }
 
 function normalizeGameoverMessages(game, result) {
-  //todo object type validation
   result.gameoverMessages = game.gameover || {};
 }
 
@@ -152,27 +137,28 @@ async function buildAssets(files, result) {
       } catch (err) {
         result.errors.push({
           from: { file },
-          message: `File is not parseable: ${err.message}`
+          message: `File 'assets/${file}' is not parseable: ${err.message}`
         });
         return null;
       }
 
-      const valid = ajv.validate(assetSchema, asset);
-      if (!valid) {
-        console.log(file, ajv.errors);
-      }
-
-      if (typeof asset !== "object") {
-        throw new Error("expected an object but got " + typeof asset);
-      }
       asset.file = `assets/${file}`;
       asset.key = removeSuffix(file);
-      normalizeName(asset, result);
+      const valid = ajv.validate(assetSchema, asset);
+      if (!valid) {
+        ajv.errors.forEach(error => {
+          result.errors.push({
+            from: asset,
+            message: `${error.instancePath} - ${error.message}`,
+            error
+          });
+        });
+      }
+
+      normalizeName(asset);
       normalizeDescription(asset, result);
-      normalizeItems(asset, result, files);
-      normalizeActions(asset, result);
-      normalizeTakeable(asset, result);
-      validateUnexpectedKeys(asset, result, expectedAssetKeys);
+      normalizeActions(asset);
+      normalizeTakeable(asset);
       collectVerbs(asset, result);
       return asset;
     })
@@ -186,14 +172,8 @@ async function buildAssets(files, result) {
     }, {});
 }
 
-function normalizeName(asset, result) {
+function normalizeName(asset) {
   asset.name = asset.name || asset.key;
-  if (typeof asset.name !== "string") {
-    result.errors.push({
-      from: asset,
-      message: `(Optional) 'name' should be a string`
-    });
-  }
 }
 
 function normalizeDescription(asset, result) {
@@ -204,55 +184,12 @@ function normalizeDescription(asset, result) {
       from: asset,
       message: `No description, using fallback.`
     });
-  } else if (
-    typeof description === "string" ||
-    validateStringArray(description)
-  ) {
+  } else if (typeof description === "string" || Array.isArray(description)) {
     asset.description = asStringArray(description);
-  } else if (typeof description === "object") {
-    const nonWhen = Object.keys(description).filter(key => key !== "when");
-    if (!description.when && nonWhen.length) {
-      result.errors.push({
-        from: asset,
-        message: `No 'when' found in description, found unexpected keys instead: ${nonWhen.join(",")}.`
-      });
-    } else if (nonWhen.length) {
-      result.warnings.push({
-        from: asset,
-        message: `Found unexpected keys in description: ${nonWhen.join(",")}.`
-      });
-    } else {
-    }
-  } else {
-    result.errors.push({
-      from: asset,
-      message: `'description' should be a string, array of strings, or 'when' clause.`
-    });
   }
 }
 
-function normalizeItems(asset, result, files) {
-  const { items } = asset;
-  if (items && !validateStringArray(items)) {
-    result.errors.push({
-      from: asset,
-      message: `'items' should be an array of strings.`
-    });
-    return;
-  }
-  asset.items = asStringArray(items);
-  const unknownItems = asset.items.filter(
-    item => !files.assetKeys.includes(item)
-  );
-  if (unknownItems.length) {
-    result.errors.push({
-      from: asset,
-      message: `'items' has entries that do not exist: ${unknownItems.join(", ")}.`
-    });
-  }
-}
-
-function normalizeTakeable(asset, result) {
+function normalizeTakeable(asset) {
   const { takeable } = asset;
   if (takeable === null || takeable === undefined) {
     asset.takeable = true;
@@ -263,7 +200,6 @@ function normalizeActions(asset) {
   if (!asset.actions) {
     asset.actions = [];
   }
-  // TODO validation?
   asset.actions.forEach(action => {
     if (action.when) {
       Object.values(action.when).forEach(normalizeAction);
@@ -274,9 +210,9 @@ function normalizeActions(asset) {
 }
 
 function normalizeAction(action) {
-  action.set = [].concat(action.set || []);
-  action.add = [].concat(action.add || []);
-  action.remove = [].concat(action.remove || []);
+  action.set = asStringArray(action.set);
+  action.add = asStringArray(action.add);
+  action.remove = asStringArray(action.remove);
 }
 
 function collectVerbs(asset, result) {
@@ -287,32 +223,15 @@ function collectVerbs(asset, result) {
   });
 }
 
-function validateUnexpectedKeys(item, result, expectedKeys) {
-  const unexpectedKeys = Object.keys(item).filter(
-    key => !expectedKeys.includes(key)
-  );
-  if (unexpectedKeys.length) {
-    result.warnings.push({
-      from: item,
-      message: `Unexpected keys: ${unexpectedKeys.join(", ")}`
-    });
-  }
-}
-
-function validateStringArray(maybeArray) {
-  return (
-    Array.isArray(maybeArray) &&
-    maybeArray.every(item => typeof item === "string")
-  );
+function removeSuffix(file) {
+  return file.replace(/.y[a]?ml$/, "");
 }
 
 function asStringArray(maybeArray) {
   return [].concat(maybeArray || []);
 }
 
-function removeSuffix(file) {
-  return file.replace(/.y[a]?ml$/, "");
-}
+function validateAll(files, result) {}
 
 function groupErrors(result) {
   const sortAndMap = arr =>

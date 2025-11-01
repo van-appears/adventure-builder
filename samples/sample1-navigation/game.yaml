@@ -1,7 +1,7 @@
 title: Sample1
 introduction: You have woken up in a strange location. You don't know how you got here.
+start: room1
 map:
-  start: room1
   room1:
     north: room3
     east: room3

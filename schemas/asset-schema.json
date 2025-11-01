@@ -1,5 +1,5 @@
 {
-  "$id": "urn:van-appears:adventure-builder-schema",
+  "$id": "urn:van-appears.github.io:adventure-builder:asset-schema",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "Validation for adventure-builder asset files",
   "type": "object",

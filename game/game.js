@@ -8,6 +8,7 @@ class Game {
   constructor(config) {
     const cloneConfig = cloneDeep(config);
     this.introduction = cloneConfig.introduction;
+    this.startLocation = cloneConfig.start;
     this.map = cloneConfig.map;
     this.synonyms = cloneConfig.synonyms;
     this.assets = cloneConfig.assets;
@@ -20,7 +21,7 @@ class Game {
   }
 
   start() {
-    this.currentLocationKey = this.map.start;
+    this.currentLocationKey = this.startLocation;
     const description = []
       .concat(this.introduction)
       .concat(this.describeCurrentLocation());
