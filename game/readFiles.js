@@ -51,7 +51,7 @@ async function readFiles(parentFolder) {
 
   await buildGame(files, result);
   await buildAssets(files, result);
-  validateAll(files, result);
+  validateAll(result);
   groupErrors(result);
   return result;
 }
@@ -96,6 +96,7 @@ async function buildGame(files, result) {
 }
 
 function normalizeMap(game, result) {
+  result.start = game.start;
   result.map = game.map;
 }
 
@@ -157,6 +158,7 @@ async function buildAssets(files, result) {
 
       normalizeName(asset);
       normalizeDescription(asset, result);
+      normalizeItems(asset, result);
       normalizeActions(asset);
       normalizeTakeable(asset);
       collectVerbs(asset, result);
@@ -196,6 +198,10 @@ function normalizeTakeable(asset) {
   }
 }
 
+function normalizeItems(asset) {
+  asset.items = asStringArray(asset.items);
+}
+
 function normalizeActions(asset) {
   if (!asset.actions) {
     asset.actions = [];
@@ -231,7 +237,41 @@ function asStringArray(maybeArray) {
   return [].concat(maybeArray || []);
 }
 
-function validateAll(files, result) {}
+function validateAll(result) {
+  validateMap(result);
+  validateItems(result);
+  validateActions(result);
+}
+
+function validateMap(result) {
+  const { map, assets } = result;
+  const locations = {};
+  const unknownLocations = Object.keys(map).filter(key => !assets[key]);
+  if (unknownLocations.length) {
+    result.errors.push({
+      from: { file: "" }, //TODO
+      message: `'map' contains unknown locations: ${unknownLocations.join(", ")}`
+    });
+  }
+
+  Object.keys(map).forEach(location => {
+    const directionLocations = Object.entries(map[location]).filter(
+      entry => !assets[entry[1]]
+    );
+    if (directionLocations.length) {
+      directionLocations.forEach(entry => {
+        result.errors.push({
+          from: { file: "" }, //TODO
+          message: `'map.${location}.${entry[0]} contains unknown location: ${entry[1]}`
+        });
+      });
+    }
+  });
+}
+
+function validateItems(result) {}
+
+function validateActions(result) {}
 
 function groupErrors(result) {
   const sortAndMap = arr =>
